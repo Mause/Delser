@@ -31,7 +31,7 @@ class KeyBadChecksum(KeyGenException):
 
 
 class Delser(object):
-    def __init__(self, sequences=None, blacklist=None):
+    def __init__(self, byte_to_check=1, sequences=None, blacklist=None):
 
         if not os.path.exists(blacklist or 'blacklist.json'):
             warnings.warn("Could not locate blacklist")
@@ -51,13 +51,8 @@ class Delser(object):
             assert type(cur_seq) == tuple, 'Incorrect sequence type; %S' % cur_seq
             assert len(cur_seq) == 3, 'Not enough values; "%s"' % cur_seq
 
-        self.status = {
-            'KEY_GOOD': 0,
-            'KEY_INVALID': 1,
-            'KEY_BLACKLISTED': 2,
-            'KEY_PHONY': 3,
-            'KEY_BADCHECKSUM': 4}
-        self.inverse_status = dict(zip(self.status.values(), self.status.keys()))
+        assert byte_to_check in range(len(self.sequences)), 'please choose a valid sequence to check against'
+        self.byte_to_check = byte_to_check
 
         self._cached_checksums = {}
         self._cached_key_bytes = {}
@@ -168,12 +163,9 @@ class Delser(object):
             print('Not hex', repr(key))
             return KeyPhony()
 
-        byte_check = 1
-        assert byte_check in range(len(self.sequences)), 'please choose a valid sequence to check against'
+        selected_sequence = self.sequences[self.byte_to_check]
 
-        selected_sequence = self.sequences[byte_check]
-
-        key_byte = key[byte_check + 1].upper()
+        key_byte = key[self.byte_to_check + 1].upper()
         generated_byte = hex(self._get_key_byte(seed, *selected_sequence) // 2)[2:]
 
         if key_byte != generated_byte.upper().rjust(4, '0'):
