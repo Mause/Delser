@@ -210,7 +210,7 @@ def main():
 
 if __name__ == '__main__':
     cur_delser = Delser()
-    key = cur_delser.make_key(input('seed>'))
+    key = cur_delser.make_key(input('seed> '))
     print('key>', key)
     cur_delser.check_key(input('key> '))
     # main()
