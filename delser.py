@@ -33,6 +33,7 @@ class Delser(object):
 
         if not os.path.exists(blacklist or 'blacklist.json'):
             warnings.warn("Could not locate blacklist")
+            self.blacklist = set()
         else:
             with open(blacklist or 'blacklist.json', 'r') as fh:
                 self.blacklist = [key.lower() for key in json.load(fh)]
@@ -42,7 +43,8 @@ class Delser(object):
                 (24, 3, 200),
                 (10, 0, 56),
                 (15, 2, 91),
-                (25, 3, 200)]
+                (25, 3, 200),
+                (25, 3, 56)]
 
         self.sequences = sequences
         for cur_seq in self.sequences:
@@ -95,14 +97,14 @@ class Delser(object):
     def make_key(self, seed: int):
         key = []
         seed = int(seed)
-        # Fill keybytes with values derived from seed.
-        # The parameters used here must be exactly the same
-        # as the ones used in the check_key function.
-        # A real key system should use more than four bytes.
 
         # the key string begins with a hexadecimal string of the seed
         key.append(hex(seed))
 
+        # Fill keybytes with values derived from seed.
+        # The parameters used here must be exactly the same
+        # as the ones used in the check_key function.
+        # A real key system should use more than four bytes.
         # then is followed by hexadecimal strings of each byte in the key
         for cur_seq in self.sequences:
             cur_byte = hex(self._get_key_byte(seed, *cur_seq) // 2)
@@ -118,10 +120,10 @@ class Delser(object):
 
     def check_key_checksum(self, key: str):
 
-        if key.count('-') != 5:
+        if key.count('-') != (len(self.sequences) + 1):
             # Our keys are always 5 selections long (?)
-            raise KeyInvalid('wrong number of sections; {}'.format(
-                key.count('-') + 1))
+            raise KeyInvalid('wrong number of sections; {} <> {}'.format(
+                key.count('-') + 1, key))
 
         # remove cosmetic hyphens and normalize case
         key = key.split('-')
@@ -210,7 +212,8 @@ def main():
 
 if __name__ == '__main__':
     cur_delser = Delser()
-    key = cur_delser.make_key(input('seed> '))
-    print('key>', key)
-    cur_delser.check_key(input('key> '))
+    while True:
+        key = cur_delser.make_key(input('seed> '))
+        cur_delser.check_key(key)
+        print('key> {}\n'.format(key))
     # main()
