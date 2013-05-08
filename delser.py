@@ -139,8 +139,7 @@ class Delser(object):
         try:
             seed = int('0x' + key[0], 16)
         except ValueError:
-            print('Not hex', repr(key))
-            return KeyPhony()
+            raise KeyPhony('Not hex; {}'.format(repr(key)))
 
         selected_sequence = self.sequences[self.byte_to_check]
 
@@ -188,22 +187,11 @@ def main():
     print('Took', time.time() - start_time, 'seconds to generate', len(to_test), end='')
     print('key' if len(to_test) == 1 else 'keys')
 
-    if not len(to_test) > 15:
-        pprint(to_test)
-
-    if len(to_test) >= (space[1] - space[0]):
-        print('keys appear to have been generated as expected')
-    else:
-        print('Not enough keys!')
-
-    bad = []
+    bad = set()
     for test in to_test:
         if not cur_delser.check_key(test[0]):
             print('For the key', test[0], 'with length', len(test[0]))
-            if test not in bad:
-                bad.append(test)
-            print('\n')
-
+            bad.add(test)
     print(len(bad), 'bad keys,', len(to_test), 'keys generated')
 
 
