@@ -121,7 +121,6 @@ class Delser(object):
     def check_key_checksum(self, key: str):
 
         if key.count('-') != (len(self.sequences) + 1):
-            # Our keys are always 5 selections long (?)
             raise KeyInvalid('wrong number of sections; {} <> {}'.format(
                 key.count('-') + 1, key))
 
@@ -146,7 +145,7 @@ class Delser(object):
         # test against blacklist
         if len(self.blacklist) > 0:
             if key.lower() in self.blacklist:
-                raise KeyBlacklisted()
+                raise KeyBlacklisted(key)
 
         self.check_key_checksum(key)
 
@@ -171,7 +170,7 @@ class Delser(object):
         generated_byte = hex(self._get_key_byte(seed, *selected_sequence) // 2)[2:]
 
         if key_byte != generated_byte.upper().rjust(4, '0'):
-            raise KeyPhony()
+            raise KeyPhony(key)
 
         # If we get this far, then it means the key is either good, or was made
         # with a keygen derived from "this" release.
