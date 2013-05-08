@@ -5,28 +5,6 @@ import warnings
 from pprint import pprint
 # http://www.brandonstaggs.com/2007/07/26/implementing-a-partial-serial-number-verification-system-in-delphi/
 
-calculated_against = ''
-
-
-class KeyGenException(Exception):
-    pass
-
-
-class KeyInvalid(KeyGenException):
-    pass
-
-
-class KeyBlacklisted(KeyGenException):
-    pass
-
-
-class KeyPhony(KeyGenException):
-    pass
-
-
-class KeyBadChecksum(KeyGenException):
-    pass
-
 
 class Delser(object):
     def __init__(self, byte_to_check=1, sequences=None, blacklist=None):
@@ -175,6 +153,26 @@ class Delser(object):
         # If we get this far, then it means the key is either good, or was made
         # with a keygen derived from "this" release.
         return True
+
+
+class KeyGenException(Exception):
+    pass
+
+
+class KeyInvalid(KeyGenException):
+    pass
+
+
+class KeyBlacklisted(KeyGenException):
+    pass
+
+
+class KeyPhony(KeyGenException):
+    pass
+
+
+class KeyBadChecksum(KeyGenException):
+    pass
 
 
 def main():
