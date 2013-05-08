@@ -46,7 +46,6 @@ class Delser(object):
 
         self.sequences = sequences
         for cur_seq in self.sequences:
-            assert type(cur_seq) == tuple, 'Incorrect sequence type; %S' % cur_seq
             assert len(cur_seq) == 3, 'Not enough values; "%s"' % cur_seq
 
         assert byte_to_check in range(len(self.sequences)), 'please choose a valid sequence to check against'
@@ -55,7 +54,7 @@ class Delser(object):
         self._cached_checksums = {}
         self._cached_key_bytes = {}
 
-    def _get_key_byte(self, seed, a, b, c):
+    def _get_key_byte(self, seed: int, a: int, b: int, c: int):
         if (seed, a, b, c) not in self._cached_key_bytes:
             a = a % 25
             b = b % 3
@@ -68,7 +67,7 @@ class Delser(object):
             result = self._cached_key_bytes[(seed, a, b, c)]
         return result
 
-    def get_checksum(self, string):
+    def get_checksum(self, string: str):
 
         if string not in self._cached_checksums:
             i = 0
@@ -88,13 +87,14 @@ class Delser(object):
             result = self._cached_checksums[string]
         return result
 
-    def format_result(self, key):
+    def format_result(self, key: list):
         seed = key[0][2:].rjust(4, '0')
         key_bytes = '-'.join([x[2:].rjust(4, '0') for x in key[1:]])
         return seed + '-' + key_bytes
 
-    def make_key(self, seed):
+    def make_key(self, seed: int):
         key = []
+        seed = int(seed)
         # Fill keybytes with values derived from seed.
         # The parameters used here must be exactly the same
         # as the ones used in the check_key function.
@@ -116,17 +116,19 @@ class Delser(object):
 
         return key
 
-    def check_key_checksum(self, key):
-        # remove cosmetic hyphens and normalize case
-        s = key.split('-')[:-1]
+    def check_key_checksum(self, key: str):
 
-        if len(s) != 5:
+        if key.count('-') != 5:
             # Our keys are always 5 selections long (?)
-            raise KeyInvalid('wrong number of sections; {}'.format(len(s)))
+            raise KeyInvalid('wrong number of sections; {}'.format(
+                key.count('-') + 1))
+
+        # remove cosmetic hyphens and normalize case
+        key = key.split('-')
 
         # last four characters are the checksum
-        grabbed_checksum = key.split('-')[-1]
-        s = '-'.join(s)
+        grabbed_checksum = key[-1]
+        s = '-'.join(key[:-1])
 
         # compare the supplied checksum against the real checksum for
         # the key string.
@@ -138,7 +140,7 @@ class Delser(object):
 
         return True
 
-    def check_key(self, key):
+    def check_key(self, key: str):
         # test against blacklist
         if len(self.blacklist) > 0:
             if key.lower() in self.blacklist:
@@ -207,4 +209,8 @@ def main():
 
 
 if __name__ == '__main__':
-    main()
+    cur_delser = Delser()
+    key = cur_delser.make_key(input('seed>'))
+    print('key>', key)
+    cur_delser.check_key(input('key> '))
+    # main()
