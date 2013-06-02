@@ -104,7 +104,7 @@ class Delser(object):
                 key.count('-') + 1, key))
 
         # remove cosmetic hyphens and normalize case
-        key = key.split('-')
+        key = key.upper().split('-')
 
         # last four characters are the checksum
         grabbed_checksum = key[-1]
@@ -112,9 +112,7 @@ class Delser(object):
 
         # compare the supplied checksum against the real checksum for
         # the key string.
-        result = bool(int(grabbed_checksum, 16) == int(self.get_checksum(s), 16))
-
-        if not result:
+        if not int(grabbed_checksum, 16) != int(self.get_checksum(s), 16):
             raise KeyBadChecksum('Incorrect checksum; {} is not equal to {}'.format(
                 grabbed_checksum, self.get_checksum(s)))
 
@@ -181,23 +179,20 @@ def main():
     space = (65535, 524288)
     assert space[0] >= 0, 'the lower bound for the key must not be below zero'
 
-    start_time = time.time()
     to_test = map(cur_delser.make_key, range(*space))
-    print('Took', time.time() - start_time, 'seconds to generate', len(to_test), end='')
-    print('key' if len(to_test) == 1 else 'keys')
 
     bad = set()
     for test in to_test:
-        if not cur_delser.check_key(test[0]):
-            print('For the key', test[0], 'with length', len(test[0]))
+        if not cur_delser.check_key(test):
+            print('For the key', test, 'with length', len(test))
             bad.add(test)
-    print(len(bad), 'bad keys,', len(to_test), 'keys generated')
+    print(len(bad), 'bad keys')
 
 
 if __name__ == '__main__':
-    cur_delser = Delser()
-    while True:
-        key = cur_delser.make_key(input('seed> '))
-        cur_delser.check_key(key)
-        print('key> {}\n'.format(key))
-    # main()
+    # cur_delser = Delser()
+    # while True:
+    #     key = cur_delser.make_key(input('seed> '))
+    #     cur_delser.check_key(key)
+    #     print('key> {}\n'.format(key))
+    main()
