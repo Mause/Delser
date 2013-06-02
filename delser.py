@@ -1,9 +1,10 @@
+"""
+http://www.brandonstaggs.com/2007/07/26/implementing-a-partial-serial-number-verification-system-in-delphi/
+"""
 import os
 import json
 import time
 import warnings
-from pprint import pprint
-# http://www.brandonstaggs.com/2007/07/26/implementing-a-partial-serial-number-verification-system-in-delphi/
 
 
 class Delser(object):
@@ -181,9 +182,7 @@ def main():
     assert space[0] >= 0, 'the lower bound for the key must not be below zero'
 
     start_time = time.time()
-    to_test = [
-        (cur_delser.make_key(y), y)
-        for y in range(*space)]
+    to_test = map(cur_delser.make_key, range(*space))
     print('Took', time.time() - start_time, 'seconds to generate', len(to_test), end='')
     print('key' if len(to_test) == 1 else 'keys')
 
