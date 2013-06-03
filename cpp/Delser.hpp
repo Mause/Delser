@@ -64,6 +64,7 @@ public:
 
     class key_gen_exception : public Exception {};
 
+    // TODO: fix this shit
     #define key_invalid std::runtime_error
     //class key_invalid : public key_gen_exception {};
 
