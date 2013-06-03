@@ -4,16 +4,15 @@
 int main(int argc, char *argv[]) { 
     Delser *cur_delser = new Delser(); 
  
-    int space = 3;
+    int space = 500000;
  
     std::vector<std::string> to_test; 
     for (int i=0; i<space; i++) { 
         to_test.push_back(cur_delser->make_key(i)); 
     } 
  
-    int good;
+    int good = 0;
     for (int test=0; test<to_test.size(); test++) { 
-        std::cout << test << std::endl;
         if (cur_delser->check_key(to_test[test])) { 
             good += 1;
         } else {
