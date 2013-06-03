@@ -47,24 +47,6 @@ std::string Delser::get_checksum(std::string string) {
 }
 
 
-std::string Delser::pad_with(std::string str, char with, int size) {
-    std::stringstream stream;
-    stream << std::setfill(with) << std::setw(size) << str;
-    return stream.str();
-}
-
-
-std::string Delser::format_result(std::vector<std::string>key) {
-    std::string seed = pad_with(key[0].substr(2, key[0].length()), '0', 4);
-    std::string key_bytes;
-
-    for (int x=1; x<key.size(); x++) {
-        key_bytes += '-' + pad_with(key[x].substr(2, key[x].length()), '0', 4);
-    }
-
-    return seed + '-' + key_bytes;
-}
-
 std::string Delser::make_key(int seed) {
     std::vector<std::string> key;
 
@@ -90,17 +72,6 @@ std::string Delser::make_key(int seed) {
     skey += "-" + checksum;
 
     return skey;
-}
-
-std::string Delser::vector_to_string(std::vector<std::string> v, char sep) {
-    std::stringstream ss;
-    for(size_t i=0; i < v.size(); ++i) {
-        if(i!=0) {
-            ss << sep;
-        }
-        ss << v[i];
-    }
-    return ss.str();
 }
 
 bool Delser::check_key_checksum(std::string skey) {
@@ -131,7 +102,7 @@ bool Delser::check_key_checksum(std::string skey) {
 bool Delser::check_key(std::string key) {
     // test against blacklist
     if (!blacklist.empty()) {
-        if (std::find(blacklist.begin(), blacklist.end(), std::ctype::tolower(key)) != blacklist.end()) {
+        if (std::find(blacklist.begin(), blacklist.end(), string_toupper(key)) != blacklist.end()) {
             throw key_blacklisted(key);
         }
     }
@@ -158,12 +129,40 @@ bool Delser::check_key(std::string key) {
        std::get<2>(selected_sequence)) / 2, false, 0);
 
     if (key_byte != pad_with(string_toupper(generated_byte), '0', 4)) {
-        throw key_phony(skey);
+        throw key_phony("Phony key");//skey);
     }
 
     // If we get this far, then it means the key is either good, or was made
     // with a keygen derived from "this" release.
     return true;
+}
+
+std::string Delser::pad_with(std::string str, char with, int size) {
+    std::stringstream stream;
+    stream << std::setfill(with) << std::setw(size) << str;
+    return stream.str();
+}
+
+std::string Delser::format_result(std::vector<std::string>key) {
+    std::string seed = pad_with(key[0].substr(2, key[0].length()), '0', 4);
+    std::string key_bytes;
+
+    for (int x=1; x<key.size(); x++) {
+        key_bytes += '-' + pad_with(key[x].substr(2, key[x].length()), '0', 4);
+    }
+
+    return seed + '-' + key_bytes;
+}
+
+std::string Delser::vector_to_string(std::vector<std::string> v, char sep) {
+    std::stringstream ss;
+    for(size_t i=0; i < v.size(); ++i) {
+        if(i!=0) {
+            ss << sep;
+        }
+        ss << v[i];
+    }
+    return ss.str();
 }
 
 std::string Delser::string_toupper(std::string str) {

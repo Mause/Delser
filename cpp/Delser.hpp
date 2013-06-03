@@ -21,25 +21,60 @@ public:
     std::string make_key(int seed);
 
     /// fairly self explanatory
-    class key_gen_exception : public std::exception {
+    class Exception: public std::exception
+    {
     public:
-        explicit key_gen_exception(const char* message) : msg_(message) {}
-        explicit key_gen_exception(const std::string& message) : msg_(message) {}
-        virtual ~key_gen_exception() throw(){}
-        virtual const char* what() const throw(){
-            return msg_.c_str();
+        /** Constructor (C strings).
+         *  @param message C-style string error message.
+         *                 The string contents are copied upon construction.
+         *                 Hence, responsibility for deleting the \c char* lies
+         *                 with the caller. 
+         */
+        explicit Exception(const char* message):
+          msg_(message)
+          {
+          }
+
+        /** Constructor (C++ STL strings).
+         *  @param message The error message.
+         */
+        explicit Exception(const std::string& message):
+          msg_(message)
+          {}
+
+        /** Destructor.
+         * Virtual to allow for subclassing.
+         */
+        virtual ~Exception() throw (){}
+
+        /** Returns a pointer to the (constant) error description.
+         *  @return A pointer to a \c const \c char*. The underlying memory
+         *          is in posession of the \c Exception object. Callers \a must
+         *          not attempt to free the memory.
+         */
+        virtual const char* what() const throw (){
+           return msg_.c_str();
         }
+
     protected:
+        /** Error message.
+         */
         std::string msg_;
     };
 
-    class key_invalid : public key_gen_exception {};
+    class key_gen_exception : public Exception {};
 
-    class key_blacklisted : public key_gen_exception {};
+    #define key_invalid std::runtime_error
+    //class key_invalid : public key_gen_exception {};
 
-    class key_phony : public key_gen_exception {};
+    #define key_blacklisted std::runtime_error
+    //class key_blacklisted : public key_gen_exception {};
 
-    class key_bad_checksum : public key_gen_exception {};
+    #define key_phony std::runtime_error
+    //class key_phony : public key_gen_exception {};
+
+    #define key_bad_checksum std::runtime_error
+    //class key_bad_checksum : public key_gen_exception {};
 
     Delser() : byte_to_check(byte_to_check), sequences(sequences), blacklist(blacklist) {
         if (sequences.empty()) {
