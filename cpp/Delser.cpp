@@ -27,7 +27,7 @@ int Delser::_get_key_byte(int seed, int a, int b, int c) {
 }
 
 std::string Delser::get_checksum(std::string string) {
-    string = string_toupper(string);
+    string = utils::upper(string);
     int i = 0;
     int left = 0x0056;
     int right = 0x00AF;
@@ -43,8 +43,8 @@ std::string Delser::get_checksum(std::string string) {
             }
         }
     }
-    std::string result = int_to_hex((left >> 8) + right, false, 4);
-    return string_toupper(result);
+    std::string result = utils::int_to_hex((left >> 8) + right);
+    return utils::upper(result);
 }
 
 
@@ -52,7 +52,7 @@ std::string Delser::make_key(int seed) {
     std::vector<std::string> key;
 
     // the key string begins with a hexadecimal string of the seed
-    key.push_back(int_to_hex(seed, false, 0));
+    key.push_back(utils::int_to_hex(seed));
 
     // Fill keybytes with values derived from seed.
     // The parameters used here must be exactly the same
@@ -62,7 +62,7 @@ std::string Delser::make_key(int seed) {
     for (int cur_seq=0; cur_seq<sequences.size(); cur_seq++) {
         sequence cur_seq_a = sequences[cur_seq];
         int cur_key_byte = _get_key_byte(seed, std::get<0>(cur_seq_a), std::get<1>(cur_seq_a), std::get<2>(cur_seq_a)) / 2;
-        std::string cur_byte = int_to_hex(cur_key_byte, false, 0);
+        std::string cur_byte = utils::int_to_hex(cur_key_byte);
         key.push_back(cur_byte);
     }
 
@@ -83,7 +83,7 @@ bool Delser::check_key_checksum(std::string skey) {
 //            std::count(skey.begin(), skey.end(), '-') + 1, skey);
     }
     // remove cosmetic hyphens and normalize case
-    std::vector<std::string> key = split(string_toupper(skey), '-');
+    std::vector<std::string> key = utils::split(utils::upper(skey), '-');
     
     // last four characters are the checksum
     std::string grabbed_checksum = key[key.size() - 1];
@@ -92,7 +92,7 @@ bool Delser::check_key_checksum(std::string skey) {
     std::vector<std::string> key_minus_checksum(key.begin(), key.end() - 1);
 
     // join vector with '-'
-    std::string s = vector_to_string(key_minus_checksum, '-');
+    std::string s = utils::vector_to_string(key_minus_checksum, '-');
     
     // compare the supplied checksum against the real checksum for
     // the key string.
@@ -107,7 +107,7 @@ bool Delser::check_key_checksum(std::string skey) {
 bool Delser::check_key(std::string key) {
     // test against blacklist
     if (!blacklist.empty()) {
-        if (std::find(blacklist.begin(), blacklist.end(), string_toupper(key)) != blacklist.end()) {
+        if (std::find(blacklist.begin(), blacklist.end(), utils::upper(key)) != blacklist.end()) {
             throw key_blacklisted(key);
         }
     }
@@ -115,7 +115,7 @@ bool Delser::check_key(std::string key) {
     check_key_checksum(key);
 
     // remove cosmetic hyphens and normalize case
-    auto skey = split(string_toupper(key), '-');
+    auto skey = utils::split(utils::upper(key), '-');
 
     // At this point, the key is either valid or forged,
     // because a forged key can have a valid checksum.
@@ -123,17 +123,17 @@ bool Delser::check_key(std::string key) {
     // actually valid.
 
     // extract the seed from the supplied key string
-    int seed = hex_str_to_int(skey[0]);
+    int seed = utils::hex_to_int(skey[0]);
 
     sequence selected_sequence = sequences[byte_to_check];
 
-    std::string key_byte = string_toupper(skey[byte_to_check + 1]);
-    std::string generated_byte = int_to_hex(_get_key_byte(seed,
+    std::string key_byte = utils::upper(skey[byte_to_check + 1]);
+    std::string generated_byte = utils::int_to_hex(_get_key_byte(seed,
        std::get<0>(selected_sequence),
        std::get<1>(selected_sequence),
-       std::get<2>(selected_sequence)) / 2, false, 0);
+       std::get<2>(selected_sequence)) / 2);
     
-    if (pad_with(key_byte, '0', generated_byte.length()) != pad_with(string_toupper(generated_byte), '0', 4)) {
+    if (utils::rjust(key_byte, '0', generated_byte.length()) != utils::rjust(utils::upper(generated_byte), '0', 4)) {
         throw key_phony("Phony key");//skey);
     }
 
@@ -142,55 +142,14 @@ bool Delser::check_key(std::string key) {
     return true;
 }
 
-std::string Delser::pad_with(std::string str, char with, int size) {
-    std::stringstream stream;
-    
-    if (str.length() >= size) {
-        return str;
-    }
-    stream << std::setfill(with) << std::setw(size) << str;
-    return stream.str();
-}
-
 std::string Delser::format_result(std::vector<std::string>key) {
-    std::string seed = pad_with(key[0].substr(2, key[0].length()), '0', 4);
+    std::string seed = utils::rjust(key[0], '0', 4);
     std::string key_bytes;
 
     for (int x=1; x<key.size(); x++) {
-        key_bytes += '-' + pad_with(key[x].substr(2, key[x].length()), '0', 4);
+        key_bytes += '-' + utils::rjust(key[x], '0', 4);
     }
     
     return seed + key_bytes;
 }
 
-std::string Delser::vector_to_string(std::vector<std::string> v, char sep) {
-    std::stringstream ss;
-    for(size_t i=0; i < v.size(); ++i) {
-        if(i!=0) {
-            ss << sep;
-        }
-        ss << v[i];
-    }
-    return ss.str();
-}
-
-std::string Delser::string_toupper(std::string str) {
-    std::transform(str.begin(), str.end(), str.begin(), ::toupper);
-    return str;
-}
-
-std::vector<std::string> &Delser::split(const std::string &s, char delim, std::vector<std::string> &elems) {
-    std::stringstream ss(s);
-    std::string item;
-    while (std::getline(ss, item, delim)) {
-        elems.push_back(item);
-    }
-    return elems;
-}
-
-std::vector<std::string> Delser::split(const std::string &s, char delim) {
-    std::vector<std::string> elems;
-    split(s, delim, elems);
-    return elems;
-}
- 

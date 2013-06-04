@@ -1,6 +1,10 @@
 /*
 http://www.brandonstaggs.com/2007/07/26/implementing-a-partial-serial-number-verification-system-in-delphi/
 */
+
+#ifndef DELSER_HPP
+#define DELSER_HPP
+
 #include <iostream>
 #include <sstream>
 #include <iomanip>
@@ -106,25 +110,29 @@ private:
     int _get_key_byte(int seed, int a, int b, int c);
     std::string format_result(std::vector<std::string>key);
 
-    std::string string_toupper(std::string);
-    std::string pad_with(std::string str, char with, int size);
-    std::string vector_to_string(std::vector<std::string> v, char sep);
+
+};
+
+namespace utils {
     template<typename T>
-    std::string int_to_hex(T i, bool prepend, int pad) {
+    std::string int_to_hex(T i) {
         std::stringstream stream;
-        if (prepend) stream << "0x";
-        stream << std::setfill('0') << std::setw(sizeof(T) * 2)
-               << std::hex << i;
+        stream << std::hex << i;
         return stream.str();
     }
     template<typename T>
-    int hex_str_to_int(T str) {
+    int hex_to_int(T str) {
         int x;
         std::stringstream stream;
         stream << std::hex << str;
         stream >> x;
         return static_cast<int>(x);
     }
+    std::string vector_to_string(std::vector<std::string> v, char sep);
+    std::string upper(std::string);
+    std::string rjust(std::string str, char with, int size);
     std::vector<std::string> &split(const std::string &s, char delim, std::vector<std::string> &elems); 
     std::vector<std::string> split(const std::string &s, char delim);
 };
+
+#endif
