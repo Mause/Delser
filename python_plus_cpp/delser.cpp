@@ -10,7 +10,7 @@ namespace Delser_py {
                 return NULL;
             }
 
-            std::cout << "Hello: " << seed << std::endl;
+            std::cout << "Hello: seed: " << seed << std::endl;
             return PyUnicode_FromString("Heloo");
         }
 
@@ -22,16 +22,22 @@ namespace Delser_py {
         } Delser_Object;
      
         static PyMethodDef methods[] = {
-            {"make_key", (PyCFunction)make_key, METH_VARARGS, ""},
+            {"make_key", make_key, METH_VARARGS, ""},
 
             {NULL, NULL, 0, NULL}   /* Sentinal */
         };
 
         static int init(Delser_Object *self) {
-            std::cout << "Hello" << std::endl;
-            self->delser_inst = Delser();
+            std::cout << "Creating new Delser object" << std::endl;
+//            self->delser_inst = *new Delser();
+            std::cout << "Object created" << std::endl;
 
             return 0;
+        }
+
+        static void dealloc(PyObject *self){
+            Py_TYPE(self)->tp_free((PyObject*)self);
+            
         }
 
         static PyTypeObject type = {
@@ -39,7 +45,7 @@ namespace Delser_py {
             "delser.Delser",           /* tp_name */
             sizeof(Delser_Object),     /* tp_basicsize */
             0,                         /* tp_itemsize */
-            0,                         /* tp_dealloc */
+            Delser_Obj::dealloc,       /* tp_dealloc */
             0,                         /* tp_print */
             0,                         /* tp_getattr */
             0,                         /* tp_setattr */
