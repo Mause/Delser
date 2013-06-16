@@ -3,7 +3,8 @@
 
 namespace Delser_py {
     namespace Delser_Obj {
-        static PyObject * make_key(PyObject *self, PyObject *args) {
+
+        static PyObject *make_key(PyObject *self, PyObject *args) {
             int seed;
 
             if(!PyArg_ParseTuple(args, "i", &seed)){
@@ -11,7 +12,10 @@ namespace Delser_py {
             }
 
             std::cout << "Hello: seed: " << seed << std::endl;
-            return PyUnicode_FromString("Heloo");
+
+            std::string key = self->delser_inst.make_key(seed);
+
+            return PyUnicode_FromString(key.c_str());
         }
 
 
@@ -28,15 +32,8 @@ namespace Delser_py {
         };
 
         static int init(Delser_Object *self) {
-            std::cout << "Creating new Delser object" << std::endl;
-
-//            try {
-                self->delser_inst = *new Delser();
-  /*          } catch (const std::bad_alloc&) {
-                return -1;
-            }*/
-
-            std::cout << "Object created" << std::endl;
+            std::cout << "Object go!" << std::endl;
+            self->delser_inst = *new Delser();
 
             return 0;
         }
