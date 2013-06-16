@@ -3,13 +3,19 @@
 
 namespace Delser_py {
     namespace Delser_Obj {
+        typedef struct {
+            PyObject_HEAD
+            Delser delser_inst;
+            /* type specific fields go here */
+        } Delser_Object;
 
-        static PyObject *make_key(PyObject *self, PyObject *args) {
+        extern "C" {
+        static PyObject *make_key(Delser_Object *self, PyObject *args) {
+        //    throw self;
             int seed;
 
-            if(!PyArg_ParseTuple(args, "i", &seed)){
+            if(!PyArg_ParseTuple(args, "i", &seed))
                 return NULL;
-            }
 
             std::cout << "Hello: seed: " << seed << std::endl;
 
@@ -17,14 +23,8 @@ namespace Delser_py {
 
             return PyUnicode_FromString(key.c_str());
         }
+        }
 
-
-        typedef struct {
-            PyObject_HEAD
-            Delser delser_inst;
-            /* type specific fields go here */
-        } Delser_Object;
-     
         static PyMethodDef methods[] = {
             {"make_key", make_key, METH_VARARGS, ""},
 
@@ -40,7 +40,6 @@ namespace Delser_py {
 
         static void dealloc(PyObject *self){
             Py_TYPE(self)->tp_free((PyObject*)self);
-            
         }
 
         static PyTypeObject type = {
