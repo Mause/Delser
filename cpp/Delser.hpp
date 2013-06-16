@@ -81,27 +81,9 @@ public:
     #define key_bad_checksum std::runtime_error
     //class key_bad_checksum : public key_gen_exception {};
 
-    Delser() : byte_to_check(byte_to_check), sequences(sequences), blacklist(blacklist) {
-        if (sequences.empty()) {
-            /*#define PBT(x,y,z) sequences.push_back(std::make_tuple(x,y,z))
-            PBT(24, 3, 200);
-            PBT(10, 0, 56);
-            PBT(15, 2, 91);
-            PBT(25, 3, 200);
-            PBT(25, 3, 56);*/
-            std::vector<int> luggage_combo = { 1, 2, 3, 4, 5 };
-
-            sequences = {
-                {24, 3, 200},
-                {10, 0, 56},
-/*                (15, 2, 91),
-                (25, 3, 200),
-                (25, 3, 56)*/};
-        }
-
+    Delser() : byte_to_check(byte_to_check) {
         // ensure a valid sequence has been selected to check against
         assert (0 <= byte_to_check && byte_to_check <= sequences.size());
-
     }
 
 private:
@@ -109,7 +91,13 @@ private:
     int byte_to_check;
 
     typedef std::tuple<int,int,int> sequence;
-    std::vector<sequence> sequences;
+    std::vector<sequence> sequences = {
+        std::make_tuple(24, 3, 200),
+        std::make_tuple(10, 0, 56),
+        std::make_tuple(15, 2, 91),
+        std::make_tuple(25, 3, 200),
+        std::make_tuple(25, 3, 56)
+    };
 
     std::vector<std::string> blacklist;
 
