@@ -29,7 +29,13 @@ namespace Delser_py {
 
         static int init(Delser_Object *self) {
             std::cout << "Creating new Delser object" << std::endl;
-//            self->delser_inst = *new Delser();
+
+//            try {
+                self->delser_inst = *new Delser();
+  /*          } catch (const std::bad_alloc&) {
+                return -1;
+            }*/
+
             std::cout << "Object created" << std::endl;
 
             return 0;

@@ -83,12 +83,20 @@ public:
 
     Delser() : byte_to_check(byte_to_check), sequences(sequences), blacklist(blacklist) {
         if (sequences.empty()) {
-            #define PBT(x,y,z) sequences.push_back(std::make_tuple(x,y,z))
+            /*#define PBT(x,y,z) sequences.push_back(std::make_tuple(x,y,z))
             PBT(24, 3, 200);
             PBT(10, 0, 56);
             PBT(15, 2, 91);
             PBT(25, 3, 200);
-            PBT(25, 3, 56);
+            PBT(25, 3, 56);*/
+            std::vector<int> luggage_combo = { 1, 2, 3, 4, 5 };
+
+            sequences = {
+                {24, 3, 200},
+                {10, 0, 56},
+/*                (15, 2, 91),
+                (25, 3, 200),
+                (25, 3, 56)*/};
         }
 
         // ensure a valid sequence has been selected to check against
