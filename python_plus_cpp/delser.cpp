@@ -75,7 +75,11 @@ namespace Delser_py {
         } 
 
         static int init(Delser_Object *self) {
+            PyObject *tmp;
+            tmp = self->delser_inst;
+            Py_INCREF(tmp);
             self->delser_inst = *new Delser();
+            Py_XDECREF(tmp);
             return 0;
         }
 
