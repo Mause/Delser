@@ -22,7 +22,7 @@ namespace Delser_py {
     namespace Delser_Obj {
         typedef struct {
             PyObject_HEAD
-            Delser delser_inst;
+            Delser *delser_inst;
             /* type specific fields go here */
         } Delser_Object;
 
@@ -35,18 +35,24 @@ namespace Delser_py {
             std::cout << "self: " << objects_type(self) << std::endl;
             std::cout << "args: " << objects_type(args) << std::endl;
             std::cout << "seed: " << seed << std::endl;
-
-            Delser *tmp = PyLong_FromLong(PyObject_GetAttrString(self, "delser_inst"));
-
-            std::string key = tmp->make_key(seed);
-
-            PyObject *pyKey = PyUnicode_FromString(key.c_str());
+            char * key = ""; 
+            extern "C" {
+                PyObject *strRep = PyObject_GetAttrString(self, "delser_inst");
+                Delser *tmp = (Delser *)PyLong_AsLong(strRep);
+                
+                key = tmp->make_key(seed);
+            }
+            PyObject *pyKey = PyUnicode_FromString(key);
             Py_XINCREF(pyKey);
 
             return pyKey;
         }
 
-        static PyObject *check_key(PyObject *self, PyObject *key) {
+        static PyObject *check_key(PyObject *self, PyObject *args) {
+            std::string key;
+            if(!PyArg_ParseTuple(args, "s", &key))
+                return NULL;
+
             return Py_NotImplemented;
         }
 
@@ -78,7 +84,7 @@ namespace Delser_py {
 
         static int init(Delser_Object *self) {
             std::cout << "Assigning..." <<std::endl;
-            self->delser_inst = *new Delser();
+            self->delser_inst = new Delser();
             return 0;
         }
 
