@@ -36,7 +36,9 @@ namespace Delser_py {
             std::cout << "args: " << objects_type(args) << std::endl;
             std::cout << "seed: " << seed << std::endl;
 
-            std::string key ="Dell";// = self->delser_inst.make_key(seed);
+            Delser *tmp = PyLong_FromLong(PyObject_GetAttrString(self, "delser_inst"));
+
+            std::string key = tmp->make_key(seed);
 
             PyObject *pyKey = PyUnicode_FromString(key.c_str());
             Py_XINCREF(pyKey);
@@ -75,11 +77,8 @@ namespace Delser_py {
         } 
 
         static int init(Delser_Object *self) {
-            PyObject *tmp;
-            tmp = self->delser_inst;
-            Py_INCREF(tmp);
+            std::cout << "Assigning..." <<std::endl;
             self->delser_inst = *new Delser();
-            Py_XDECREF(tmp);
             return 0;
         }
 
