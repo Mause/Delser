@@ -1,5 +1,7 @@
 #include "../cpp/Delser.hpp"
 #include <Python.h>
+#include "structmember.h"
+
 
 const char * objects_type(PyObject *obj){
     PyObject* r = PyObject_Type(obj);
@@ -18,26 +20,26 @@ const char * objects_type(PyObject *obj){
 
 namespace Delser_py {
     namespace Delser_Obj {
-        typedef struct Delser_Object : PyObject {
-            Delser _CPP_API;
+        typedef struct {
+            PyObject_HEAD
+            Delser delser_inst;
             /* type specific fields go here */
         } Delser_Object;
 
         static PyObject *make_key(PyObject *self, PyObject *args) {
-            std::cout << "self: " << objects_type(self) << std::endl;
-            std::cout << "args: " << objects_type(args) << std::endl;
-            
             int seed;
 
             if(!PyArg_ParseTuple(args, "i", &seed))
                 return NULL;
-
+            
+            std::cout << "self: " << objects_type(self) << std::endl;
+            std::cout << "args: " << objects_type(args) << std::endl;
             std::cout << "seed: " << seed << std::endl;
 
-            std::string key = "Derp";// = self->delser_inst.make_key(seed);
+            std::string key ="Dell";// = self->delser_inst.make_key(seed);
 
             PyObject *pyKey = PyUnicode_FromString(key.c_str());
-            Py_INCREF(pyKey);
+            Py_XINCREF(pyKey);
 
             return pyKey;
         }
@@ -52,8 +54,28 @@ namespace Delser_py {
             {NULL, NULL, 0, NULL}   /* Sentinal */
         };
 
+        static PyMemberDef members[] = {
+            {
+                "delser_inst",
+                T_LONG,
+                offsetof(Delser_Object, delser_inst),
+                0,
+                "Pointer to underlyling Delser instance"
+            },
+            {NULL} /* sentinal */
+        };
+
+        static PyObject *Delser_new(PyTypeObject *type, PyObject *args, PyObject *kwds)
+        {
+            Delser_Object *self;
+
+            self = (Delser_Object *)type->tp_alloc(type, 0);
+
+            return (PyObject *)self;
+        } 
+
         static int init(Delser_Object *self) {
-            self->_CPP_API = *new Delser();
+            self->delser_inst = *new Delser();
             return 0;
         }
 
@@ -91,7 +113,7 @@ namespace Delser_py {
             0,                         /* tp_iter */
             0,                         /* tp_iternext */
             Delser_Obj::methods,       /* tp_methods */
-            0,                         /* tp_members */
+            Delser_Obj::members,       /* tp_members */
             0,                         /* tp_getset */
             0,                         /* tp_base */
             0,                         /* tp_dict */
@@ -100,7 +122,7 @@ namespace Delser_py {
             0,                         /* tp_dictoffset */
             (initproc)Delser_Obj::init,     /* tp_init */
             0,                         /* tp_alloc */
-            0,                         /* tp_new */
+            Delser_Obj::Delser_new,                         /* tp_new */
         };    
     }
 
@@ -113,14 +135,10 @@ namespace Delser_py {
     };
 
     PyMODINIT_FUNC PyInit_delser(void) {
-        Delser_Obj::type.tp_new = PyType_GenericNew;
-        if (PyType_Ready(&Delser_Obj::type) < 0)
-            return NULL;
+        if (PyType_Ready(&Delser_Obj::type) < 0) return NULL;
         
-        PyObject *m;
-        m = PyModule_Create(&Module);
-        if (m == NULL)
-            return NULL;
+        PyObject *m = PyModule_Create(&Module);
+        if (!m) return NULL;
 
         Py_INCREF(&Delser_Obj::type);
         PyModule_AddObject(m, "Delser", (PyObject *)&Delser_Obj::type);
