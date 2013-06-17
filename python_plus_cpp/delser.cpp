@@ -1,6 +1,21 @@
 #include "../cpp/Delser.hpp"
 #include <Python.h>
 
+const char * objects_type(PyObject *obj){
+    PyObject* r = PyObject_Type(obj);
+    if (r == NULL) return NULL;
+
+    PyObject* o = PyObject_Repr(r);
+    if (o == NULL) return NULL;
+
+    PyObject *pyStr = PyUnicode_AsEncodedString(o, "utf-8", "");
+    if (pyStr == NULL) return NULL;
+
+    const char *str = PyBytes_AS_STRING(pyStr);
+    if (str == NULL) return NULL;
+    return str;
+}
+
 namespace Delser_py {
     namespace Delser_Obj {
         typedef struct {
@@ -9,9 +24,9 @@ namespace Delser_py {
             /* type specific fields go here */
         } Delser_Object;
 
-        extern "C" {
-        static PyObject *make_key(Delser_Object *self, PyObject *args) {
-        //    throw self;
+        static PyObject *make_key(PyObject *self, PyObject *args) {
+            std::cout << "type: " << objects_type(self) << std::endl;
+
             int seed;
 
             if(!PyArg_ParseTuple(args, "i", &seed))
@@ -19,15 +34,18 @@ namespace Delser_py {
 
             std::cout << "Hello: seed: " << seed << std::endl;
 
-            std::string key = self->delser_inst.make_key(seed);
+            std::string key = "Derp";// = self->delser_inst.make_key(seed);
 
             return PyUnicode_FromString(key.c_str());
         }
+
+        static PyObject *check_key(PyObject *self, PyObject *key) {
+            return Py_NotImplemented;
         }
 
         static PyMethodDef methods[] = {
             {"make_key", make_key, METH_VARARGS, ""},
-
+            {"check_key", check_key, METH_VARARGS, ""},
             {NULL, NULL, 0, NULL}   /* Sentinal */
         };
 
