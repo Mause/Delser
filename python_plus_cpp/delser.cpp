@@ -18,25 +18,28 @@ const char * objects_type(PyObject *obj){
 
 namespace Delser_py {
     namespace Delser_Obj {
-        typedef struct {
-            PyObject_HEAD
-            Delser delser_inst;
+        typedef struct Delser_Object : PyObject {
+            Delser _CPP_API;
             /* type specific fields go here */
         } Delser_Object;
 
         static PyObject *make_key(PyObject *self, PyObject *args) {
-            std::cout << "type: " << objects_type(self) << std::endl;
-
+            std::cout << "self: " << objects_type(self) << std::endl;
+            std::cout << "args: " << objects_type(args) << std::endl;
+            
             int seed;
 
             if(!PyArg_ParseTuple(args, "i", &seed))
                 return NULL;
 
-            std::cout << "Hello: seed: " << seed << std::endl;
+            std::cout << "seed: " << seed << std::endl;
 
             std::string key = "Derp";// = self->delser_inst.make_key(seed);
 
-            return PyUnicode_FromString(key.c_str());
+            PyObject *pyKey = PyUnicode_FromString(key.c_str());
+            Py_INCREF(pyKey);
+
+            return pyKey;
         }
 
         static PyObject *check_key(PyObject *self, PyObject *key) {
@@ -50,9 +53,7 @@ namespace Delser_py {
         };
 
         static int init(Delser_Object *self) {
-            std::cout << "Object go!" << std::endl;
-            self->delser_inst = *new Delser();
-
+            self->_CPP_API = *new Delser();
             return 0;
         }
 
@@ -106,17 +107,17 @@ namespace Delser_py {
     static struct PyModuleDef Module = {
         PyModuleDef_HEAD_INIT,
         "delser",   /* name of module */
-        "",       /* module doc */
+        "Serial key generator module",       /* module doc */
         -1,
         NULL, NULL, NULL, NULL, NULL
     };
 
-    PyMODINIT_FUNC PyInit_delser(void){
-        PyObject *m;
+    PyMODINIT_FUNC PyInit_delser(void) {
         Delser_Obj::type.tp_new = PyType_GenericNew;
         if (PyType_Ready(&Delser_Obj::type) < 0)
             return NULL;
         
+        PyObject *m;
         m = PyModule_Create(&Module);
         if (m == NULL)
             return NULL;
