@@ -2,6 +2,20 @@
 #include <Python.h>
 #include "structmember.h"
 
+const char * objects_dir(PyObject *obj){
+    PyObject* r = PyObject_Dir(obj);
+    if (r == NULL) return NULL;
+
+    PyObject* o = PyObject_Repr(r);
+    if (o == NULL) return NULL;
+
+    PyObject *pyStr = PyUnicode_AsEncodedString(o, "utf-8", "");
+    if (pyStr == NULL) return NULL;
+
+    const char *str = PyBytes_AS_STRING(pyStr);
+    if (str == NULL) return NULL;
+    return str;
+}
 
 const char * objects_type(PyObject *obj){
     PyObject* r = PyObject_Type(obj);
@@ -22,36 +36,46 @@ namespace Delser_py {
     namespace Delser_Obj {
         typedef struct {
             PyObject_HEAD
-            Delser *delser_inst;
+            PyObject *delser_inst;
             /* type specific fields go here */
         } Delser_Object;
 
         static PyObject *make_key(PyObject *self, PyObject *args) {
             int seed;
 
-            if(!PyArg_ParseTuple(args, "i", &seed))
+            if(!PyArg_ParseTuple(args, "i", &seed)) {
+                std::cout << "Bad args" << std::endl;
                 return NULL;
+            }
             
             std::cout << "self: " << objects_type(self) << std::endl;
             std::cout << "args: " << objects_type(args) << std::endl;
             std::cout << "seed: " << seed << std::endl;
-            char * key = ""; 
-            extern "C" {
-                PyObject *strRep = PyObject_GetAttrString(self, "delser_inst");
-                Delser *tmp = (Delser *)PyLong_AsLong(strRep);
-                
-                key = tmp->make_key(seed);
+
+            PyObject *delser_inst = PyObject_GetAttrString(self, "delser_inst");
+            if (delser_inst == NULL) {
+                return NULL;
             }
-            PyObject *pyKey = PyUnicode_FromString(key);
+            if (!PyCapsule_CheckExact(delser_inst)) {
+                PyErr_BadInternalCall();
+                return NULL;
+            }
+
+            PyCapsule_GetPointer(delser_inst, "delser_inst");
+            if (delser_inst == NULL) return NULL;
+
+            std::string key = ((Delser *)delser_inst)->make_key(seed);
+
+            PyObject *pyKey = PyUnicode_FromString(key.c_str());
             Py_XINCREF(pyKey);
 
             return pyKey;
         }
 
         static PyObject *check_key(PyObject *self, PyObject *args) {
-            std::string key;
+           /* std::string key;
             if(!PyArg_ParseTuple(args, "s", &key))
-                return NULL;
+                return NULL;*/
 
             return Py_NotImplemented;
         }
@@ -65,7 +89,7 @@ namespace Delser_py {
         static PyMemberDef members[] = {
             {
                 "delser_inst",
-                T_LONG,
+                T_OBJECT,
                 offsetof(Delser_Object, delser_inst),
                 0,
                 "Pointer to underlyling Delser instance"
@@ -82,13 +106,29 @@ namespace Delser_py {
             return (PyObject *)self;
         } 
 
-        static int init(Delser_Object *self) {
-            std::cout << "Assigning..." <<std::endl;
-            self->delser_inst = new Delser();
+        static int init(PyObject *self) {
+            std::cout << "Assigning..." << objects_type(self) << std::endl;
+            std::cout << objects_dir(self) << std::endl;
+
+            // TODO: fill in destructor
+            PyObject *delser_inst = PyCapsule_New(new Delser(), "delser_inst", NULL);
+            PyObject_SetAttrString(self, "delser_inst", delser_inst);
+
+            PyObject *y = PyObject_GetAttrString(self, "delser_inst");
+            std::cout << "Capsule: " << objects_type(y) << std::endl;
+
+//            if (i == -1) return NULL;
             return 0;
         }
 
         static void dealloc(PyObject *self){
+            PyObject *delser_inst_capsule = PyObject_GetAttrString(self, "delser_inst");
+            PyCapsule_GetPointer(delser_inst_capsule, "delser_inst");
+//            if (delser_inst_capsule == NULL) return NULL;
+
+            // TODO: fix this!
+            //delete delser_inst_capsule; 
+
             Py_TYPE(self)->tp_free((PyObject*)self);
         }
 

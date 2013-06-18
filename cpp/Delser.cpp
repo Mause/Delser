@@ -13,6 +13,7 @@ http://www.brandonstaggs.com/2007/07/26/implementing-a-partial-serial-number-ver
 #include <tuple>
 
 #include "Delser.hpp"
+#include "utils.cpp"
 
 int Delser::_get_key_byte(int seed, int a, int b, int c) {
     a = a % 25;

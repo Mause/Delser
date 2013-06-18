@@ -1,7 +1,7 @@
 from distutils.core import setup, Extension
 
 delser = Extension("delser",
-                   sources=["delser.cpp"],
+                   sources=["delser.cpp", "cpp/Delser.cpp"],
                    extra_compile_args=['--std=c++11'])
 
 
