@@ -44,13 +44,12 @@ namespace Delser_py {
             int seed;
 
             if(!PyArg_ParseTuple(args, "i", &seed)) {
-                std::cout << "Bad args" << std::endl;
                 return NULL;
             }
             
-            std::cout << "self: " << objects_type(self) << std::endl;
+            /*std::cout << "self: " << objects_type(self) << std::endl;
             std::cout << "args: " << objects_type(args) << std::endl;
-            std::cout << "seed: " << seed << std::endl;
+            std::cout << "seed: " << seed << std::endl;*/
 
             PyObject *delser_inst = PyObject_GetAttrString(self, "delser_inst");
             if (delser_inst == NULL) {
@@ -64,7 +63,9 @@ namespace Delser_py {
             PyCapsule_GetPointer(delser_inst, "delser_inst");
             if (delser_inst == NULL) return NULL;
 
+            std::cout << "Calling now" << std::endl;
             std::string key = ((Delser *)delser_inst)->make_key(seed);
+            std::cout << "Called" << std::endl;
 
             PyObject *pyKey = PyUnicode_FromString(key.c_str());
             Py_XINCREF(pyKey);
@@ -105,30 +106,27 @@ namespace Delser_py {
 
             return (PyObject *)self;
         } 
-
+/*
+        PyCapsule_Destructor Delser_dealloc(PyObject *capsule) {
+            PyObject *delser_inst = PyObject_GetAttrString(capsule, "delser_inst");
+            if (delser_inst != NULL) {
+                PyCapsule_GetPointer(delser_inst, "delser_inst");
+                // TODO: fix this!
+                delete (Delser *)delser_inst; 
+            }
+            return;
+        }
+*/
         static int init(PyObject *self) {
-            std::cout << "Assigning..." << objects_type(self) << std::endl;
-            std::cout << objects_dir(self) << std::endl;
-
             // TODO: fill in destructor
             PyObject *delser_inst = PyCapsule_New(new Delser(), "delser_inst", NULL);
             PyObject_SetAttrString(self, "delser_inst", delser_inst);
-
-            PyObject *y = PyObject_GetAttrString(self, "delser_inst");
-            std::cout << "Capsule: " << objects_type(y) << std::endl;
-
 //            if (i == -1) return NULL;
+
             return 0;
         }
 
         static void dealloc(PyObject *self){
-            PyObject *delser_inst_capsule = PyObject_GetAttrString(self, "delser_inst");
-            PyCapsule_GetPointer(delser_inst_capsule, "delser_inst");
-//            if (delser_inst_capsule == NULL) return NULL;
-
-            // TODO: fix this!
-            //delete delser_inst_capsule; 
-
             Py_TYPE(self)->tp_free((PyObject*)self);
         }
 

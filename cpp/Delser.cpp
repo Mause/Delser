@@ -29,7 +29,6 @@ int Delser::_get_key_byte(int seed, int a, int b, int c) {
 
 std::string Delser::get_checksum(std::string string) {
     string = utils::upper(string);
-    int i = 0;
     int left = 0x0056;
     int right = 0x00AF;
     if (string.length() > 0) {
