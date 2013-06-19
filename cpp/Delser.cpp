@@ -54,18 +54,19 @@ std::string Delser::make_key(int seed) {
     // the key string begins with a hexadecimal string of the seed
     key.push_back(utils::int_to_hex(seed));
 
+    if (sequences.size() > 100) { throw Exception("Too many sequences at make_key call"); }
+
     // Fill keybytes with values derived from seed.
     // The parameters used here must be exactly the same
     // as the ones used in the check_key function.
     // A real key system should use more than four bytes.
     // then is followed by hexadecimal strings of each byte in the key
-    for (int cur_seq=0; cur_seq<sequences.size(); cur_seq++) {
-        sequence cur_seq_a = sequences[cur_seq];
-        int cur_key_byte = _get_key_byte(seed, std::get<0>(cur_seq_a), std::get<1>(cur_seq_a), std::get<2>(cur_seq_a)) / 2;
-        std::string cur_byte = utils::int_to_hex(cur_key_byte);
-        key.push_back(cur_byte);
+    for (std::vector<sequence>::iterator cur_seq = sequences.begin(); cur_seq != sequences.end(); ++cur_seq) {
+        int cur_key_byte = _get_key_byte(seed, std::get<0>(*cur_seq), std::get<1>(*cur_seq), std::get<2>(*cur_seq)) / 2;
+        std::string cur_key_byte_str = utils::int_to_hex(cur_key_byte);
+        key.push_back(cur_key_byte_str);
+   //     std::cout << "Checkpoint " << cur_seq << std::endl;
     }
-
     std::string skey = format_result(key);
 
     // add checksum to key string

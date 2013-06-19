@@ -82,6 +82,7 @@ public:
     //class key_bad_checksum : public key_gen_exception {};
 
     Delser() : byte_to_check(byte_to_check) {
+        if (!sequences.size() == 5) { throw Exception("Too many sequences at initialisation"); }
         // ensure a valid sequence has been selected to check against
         assert (0 <= byte_to_check && byte_to_check <= sequences.size());
     }

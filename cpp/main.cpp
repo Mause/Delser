@@ -5,7 +5,7 @@
 int main(int argc, char *argv[]) { 
     Delser *cur_delser = new Delser(); 
 
-    if (!true) { 
+    if (true) { 
         long int space = 900000;
      
         std::vector<std::string> to_test; 

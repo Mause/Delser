@@ -1,6 +1,7 @@
 #include "../cpp/Delser.hpp"
 #include <Python.h>
 #include "structmember.h"
+#include "assert.h"
 
 const char * objects_dir(PyObject *obj){
     PyObject* r = PyObject_Dir(obj);
@@ -58,6 +59,9 @@ namespace Delser_py {
             if (!PyCapsule_CheckExact(delser_inst)) {
                 PyErr_BadInternalCall();
                 return NULL;
+            }
+            if (!PyCapsule_IsValid(delser_inst, "delser_inst")) {
+                PyErr_BadInternalCall();
             }
 
             PyCapsule_GetPointer(delser_inst, "delser_inst");
@@ -120,8 +124,8 @@ namespace Delser_py {
         static int init(PyObject *self) {
             // TODO: fill in destructor
             PyObject *delser_inst = PyCapsule_New(new Delser(), "delser_inst", NULL);
-            PyObject_SetAttrString(self, "delser_inst", delser_inst);
-//            if (i == -1) return NULL;
+            if (PyObject_SetAttrString(self, "delser_inst", delser_inst) == -1) return -1;
+            assert ( PyCapsule_IsValid(delser_inst, "delser_inst") );
 
             return 0;
         }
