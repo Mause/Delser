@@ -37,39 +37,19 @@ namespace Delser_py {
     namespace Delser_Obj {
         typedef struct {
             PyObject_HEAD
-            PyObject *delser_inst;
+            Delser *delser_inst;
             /* type specific fields go here */
         } Delser_Object;
 
         static PyObject *make_key(PyObject *self, PyObject *args) {
             int seed;
+            Delser * delser_inst = ((Delser_Object *)self)->delser_inst;
 
             if(!PyArg_ParseTuple(args, "i", &seed)) {
                 return NULL;
             }
             
-            /*std::cout << "self: " << objects_type(self) << std::endl;
-            std::cout << "args: " << objects_type(args) << std::endl;
-            std::cout << "seed: " << seed << std::endl;*/
-
-            PyObject *delser_inst = PyObject_GetAttrString(self, "delser_inst");
-            if (delser_inst == NULL) {
-                return NULL;
-            }
-            if (!PyCapsule_CheckExact(delser_inst)) {
-                PyErr_BadInternalCall();
-                return NULL;
-            }
-            if (!PyCapsule_IsValid(delser_inst, "delser_inst")) {
-                PyErr_BadInternalCall();
-            }
-
-            PyCapsule_GetPointer(delser_inst, "delser_inst");
-            if (delser_inst == NULL) return NULL;
-
-            std::cout << "Calling now" << std::endl;
             std::string key = ((Delser *)delser_inst)->make_key(seed);
-            std::cout << "Called" << std::endl;
 
             PyObject *pyKey = PyUnicode_FromString(key.c_str());
             Py_XINCREF(pyKey);
@@ -92,45 +72,20 @@ namespace Delser_py {
         };
 
         static PyMemberDef members[] = {
-            {
-                "delser_inst",
-                T_OBJECT,
-                offsetof(Delser_Object, delser_inst),
-                0,
-                "Pointer to underlyling Delser instance"
-            },
             {NULL} /* sentinal */
         };
 
-        static PyObject *Delser_new(PyTypeObject *type, PyObject *args, PyObject *kwds)
-        {
-            Delser_Object *self;
-
-            self = (Delser_Object *)type->tp_alloc(type, 0);
-
-            return (PyObject *)self;
-        } 
-/*
-        PyCapsule_Destructor Delser_dealloc(PyObject *capsule) {
-            PyObject *delser_inst = PyObject_GetAttrString(capsule, "delser_inst");
-            if (delser_inst != NULL) {
-                PyCapsule_GetPointer(delser_inst, "delser_inst");
-                // TODO: fix this!
-                delete (Delser *)delser_inst; 
-            }
-            return;
-        }
-*/
         static int init(PyObject *self) {
             // TODO: fill in destructor
-            PyObject *delser_inst = PyCapsule_New(new Delser(), "delser_inst", NULL);
-            if (PyObject_SetAttrString(self, "delser_inst", delser_inst) == -1) return -1;
-            assert ( PyCapsule_IsValid(delser_inst, "delser_inst") );
+            Delser *delser_inst = new Delser();
+            ((Delser_Object *)self)->delser_inst = delser_inst;
 
             return 0;
         }
 
         static void dealloc(PyObject *self){
+            delete ((Delser_Object *)self)->delser_inst;
+
             Py_TYPE(self)->tp_free((PyObject*)self);
         }
 
@@ -173,7 +128,7 @@ namespace Delser_py {
             0,                         /* tp_dictoffset */
             (initproc)Delser_Obj::init,     /* tp_init */
             0,                         /* tp_alloc */
-            Delser_Obj::Delser_new,                         /* tp_new */
+            PyType_GenericNew          /* tp_new */
         };    
     }
 
