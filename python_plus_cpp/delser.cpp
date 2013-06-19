@@ -58,10 +58,10 @@ namespace Delser_py {
         }
 
         static PyObject *check_key(PyObject *self, PyObject *args) {
-            std::string key;
-            if(!PyArg_ParseTuple(args, "s", &key))
+            char *skey;
+            if(!PyArg_ParseTuple(args, "s", &skey))
                 return NULL;
-
+            std::string key = skey;
             Delser * delser_inst = ((Delser_Object *)self)->delser_inst;
             bool good;
             //try {
