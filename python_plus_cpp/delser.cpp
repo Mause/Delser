@@ -43,13 +43,13 @@ namespace Delser_py {
 
         static PyObject *make_key(PyObject *self, PyObject *args) {
             int seed;
-            Delser * delser_inst = ((Delser_Object *)self)->delser_inst;
 
             if(!PyArg_ParseTuple(args, "i", &seed)) {
                 return NULL;
             }
             
-            std::string key = ((Delser *)delser_inst)->make_key(seed);
+            Delser * delser_inst = ((Delser_Object *)self)->delser_inst;
+            std::string key = delser_inst->make_key(seed);
 
             PyObject *pyKey = PyUnicode_FromString(key.c_str());
             Py_XINCREF(pyKey);
@@ -58,9 +58,24 @@ namespace Delser_py {
         }
 
         static PyObject *check_key(PyObject *self, PyObject *args) {
-           /* std::string key;
+            std::string key;
             if(!PyArg_ParseTuple(args, "s", &key))
-                return NULL;*/
+                return NULL;
+
+            Delser * delser_inst = ((Delser_Object *)self)->delser_inst;
+            bool good;
+            //try {
+                good = delser_inst->check_key(key);
+            /*} catch (std::string *msg) {
+                std::cout << msg << std::endl;
+                PyErr_BadInternalCall();
+                return NULL;
+            }*/
+
+            long good_long = good ? 1 : 0;
+    
+            PyObject *good_bool = PyBool_FromLong(good_long);
+            Py_XINCREF(good_bool);
 
             return Py_NotImplemented;
         }
