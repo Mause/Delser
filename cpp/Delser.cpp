@@ -74,14 +74,7 @@ std::string Delser::make_key(int seed) {
 }
 
 bool Delser::check_key_checksum(std::string skey) {
-//    std::cout << "Checking: \"" << skey << "<---" << std::endl;
-  //  if (skey.length() == 0) { throw Exception("damn"); }
-//    throw Exception(skey);
-    int seq_len = (sequences.size() + 1);
-    auto b = skey.begin();
-    auto e = skey.end();
-    int count = std::count(b, e, '-');
-    if (count != seq_len) {
+    if (std::count(skey.begin(), skey.end(), '-') != (sequences.size() + 1)) {
         throw key_invalid("wrong number of sections");//; %d <> %d", 
 //            std::count(skey.begin(), skey.end(), '-') + 1, skey);
     }
@@ -128,6 +121,8 @@ bool Delser::check_key(std::string key) {
     // extract the seed from the supplied key string
     int seed = utils::hex_to_int(skey[0]);
 
+    std::cout << sequences.size() << " " << byte_to_check << std::endl;
+    if (!(byte_to_check <= sequences.size() && sequences.size() <= byte_to_check)) { throw Exception("Bah"); }
     sequence selected_sequence = sequences[byte_to_check];
 
     std::string key_byte = utils::upper(skey[byte_to_check + 1]);

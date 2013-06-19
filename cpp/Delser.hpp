@@ -11,7 +11,6 @@ http://www.brandonstaggs.com/2007/07/26/implementing-a-partial-serial-number-ver
 
 #include <memory>
 #include <algorithm>
-#include <assert.h>
 
 #include <vector>
 #include <array>
@@ -81,9 +80,11 @@ public:
     #define key_bad_checksum std::runtime_error
     //class key_bad_checksum : public key_gen_exception {};
 
-    Delser() : byte_to_check(byte_to_check) {
+    Delser(int byte_to_check) : byte_to_check(byte_to_check) {
         // ensure a valid sequence has been selected to check against
-        assert (0 <= byte_to_check && byte_to_check <= sequences.size());
+        if (!(0 <= byte_to_check && byte_to_check <= sequences.size())) {
+            throw Exception("Bad byte_to_check");
+        }
     }
 
 private:
@@ -110,6 +111,13 @@ private:
 };
 
 namespace utils {
+    template<typename T>
+    void assert(bool condition, T str) {
+        if (!condition) {
+            throw Delser::Exception(str);
+        }
+    }
+
     template<typename T>
     std::string int_to_hex(T i) {
         std::stringstream stream;

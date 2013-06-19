@@ -90,9 +90,12 @@ namespace Delser_py {
             {NULL} /* sentinal */
         };
 
-        static int init(PyObject *self) {
-            // TODO: fill in destructor
-            Delser *delser_inst = new Delser();
+        static int init(PyObject *self, PyObject *args) {
+            int *byte_to_check;
+            if(!PyArg_ParseTuple(args, "i", &byte_to_check))
+                return -1;
+
+            Delser *delser_inst = new Delser(*byte_to_check);
             ((Delser_Object *)self)->delser_inst = delser_inst;
 
             return 0;
