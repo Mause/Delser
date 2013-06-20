@@ -78,6 +78,7 @@ bool Delser::check_key_checksum(std::string skey) {
         throw key_invalid("wrong number of sections");//; %d <> %d", 
 //            std::count(skey.begin(), skey.end(), '-') + 1, skey);
     }
+
     // remove cosmetic hyphens and normalize case
     std::vector<std::string> key = utils::split(utils::upper(skey), '-');
     
@@ -121,8 +122,6 @@ bool Delser::check_key(std::string key) {
     // extract the seed from the supplied key string
     int seed = utils::hex_to_int(skey[0]);
 
-    std::cout << sequences.size() << " " << byte_to_check << std::endl;
-    if (!(byte_to_check <= sequences.size() && sequences.size() <= byte_to_check)) { throw Exception("Bah"); }
     sequence selected_sequence = sequences[byte_to_check];
 
     std::string key_byte = utils::upper(skey[byte_to_check + 1]);

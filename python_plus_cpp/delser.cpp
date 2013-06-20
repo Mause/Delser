@@ -77,7 +77,7 @@ namespace Delser_py {
             PyObject *good_bool = PyBool_FromLong(good_long);
             Py_XINCREF(good_bool);
 
-            return Py_NotImplemented;
+            return good_bool;
         }
 
         static PyMethodDef methods[] = {
@@ -91,11 +91,11 @@ namespace Delser_py {
         };
 
         static int init(PyObject *self, PyObject *args) {
-            int *byte_to_check;
+            int byte_to_check;
             if(!PyArg_ParseTuple(args, "i", &byte_to_check))
                 return -1;
 
-            Delser *delser_inst = new Delser(*byte_to_check);
+            Delser *delser_inst = new Delser(byte_to_check);
             ((Delser_Object *)self)->delser_inst = delser_inst;
 
             return 0;
