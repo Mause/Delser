@@ -3,7 +3,7 @@
 #include "Delser.hpp"
 
 int main(int argc, char *argv[]) { 
-    Delser *cur_delser = new Delser(); 
+    Delser *cur_delser = new Delser(0); 
 
     if (true) { 
         long int space = 900000;

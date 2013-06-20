@@ -62,17 +62,9 @@ namespace Delser_py {
             if(!PyArg_ParseTuple(args, "s", &skey))
                 return NULL;
             std::string key = skey;
-            Delser * delser_inst = ((Delser_Object *)self)->delser_inst;
-            bool good;
-            //try {
-                good = delser_inst->check_key(key);
-            /*} catch (std::string *msg) {
-                std::cout << msg << std::endl;
-                PyErr_BadInternalCall();
-                return NULL;
-            }*/
 
-            long good_long = good ? 1 : 0;
+            Delser * delser_inst = ((Delser_Object *)self)->delser_inst;
+            long good_long = delser_inst->check_key(key) ? 1 : 0;
     
             PyObject *good_bool = PyBool_FromLong(good_long);
             Py_XINCREF(good_bool);
@@ -91,14 +83,46 @@ namespace Delser_py {
         };
 
         static int init(PyObject *self, PyObject *args) {
+            // setup needed variables
             int byte_to_check;
-            if(!PyArg_ParseTuple(args, "i", &byte_to_check))
+            PyObject *py_sequences;
+
+            // read in the arguments
+            if(!PyArg_ParseTuple(args, "i|O", &byte_to_check, &py_sequences))
                 return -1;
 
-            Delser *delser_inst = new Delser(byte_to_check);
-            ((Delser_Object *)self)->delser_inst = delser_inst;
+            // convert the PyList of python tuples into a vector of cpp tuples
+            std::vector<Delser::sequence> sequences;
+            Py_ssize_t list_size = PyList_Size(py_sequences);
+            for (Py_ssize_t i=0; i<list_size; i++) {
+                int p1, p2, p3;
 
-            return 0;
+                // grab the tuple
+                PyObject *tuple = PyList_GetItem(args, i);
+                if (tuple == NULL) {
+                    std::cout << "Bad tuple!" << std::endl;
+                    return -1;
+                }
+
+                // parse the tuple
+                if (!PyArg_ParseTuple(tuple, "iii;Bad sequence", &p1, &p2, &p3))
+                    return -1;
+
+                // and add the tuple to the vector 
+                sequences.push_back(std::make_tuple(p1, p2, p3));
+                std::cout << "Tuple: " << p1 << ", " << p2 << ", " << p3 << std::endl;
+            }
+
+            try {
+                Delser *delser_inst = new Delser(byte_to_check, sequences);
+
+                ((Delser_Object *)self)->delser_inst = delser_inst;
+                return 0;
+
+            } catch (bad_byte_to_check_error& e) {
+                PyErr_SetString(PyExc_ValueError, "Invalid byte_to_check specified");
+                return -1;
+            }
         }
 
         static void dealloc(PyObject *self){

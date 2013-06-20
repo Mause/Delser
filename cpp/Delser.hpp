@@ -19,10 +19,6 @@ http://www.brandonstaggs.com/2007/07/26/implementing-a-partial-serial-number-ver
 
 class Delser {
 public:
-    bool check_key(std::string key);
-
-    std::string make_key(int seed);
-
     /// fairly self explanatory
     class Exception: public std::exception
     {
@@ -33,17 +29,15 @@ public:
          *                 Hence, responsibility for deleting the \c char* lies
          *                 with the caller. 
          */
-        explicit Exception(const char* message):
-          msg_(message)
-          {
-          }
+        template<typename T>
+        explicit Exception(T message) : msg_(message) {}
+//        explicit Exception(char* message) : msg_(message) {}
 
         /** Constructor (C++ STL strings).
          *  @param message The error message.
          */
-        explicit Exception(const std::string& message):
-          msg_(message)
-          {}
+  //      explicit Exception(const std::string& message) : msg_(message) {}
+    //    explicit Exception(std::string& message)       : msg_(message) {}
 
         /** Destructor.
          * Virtual to allow for subclassing.
@@ -58,47 +52,58 @@ public:
         virtual const char* what() const throw (){
            return msg_.c_str();
         }
-
+    
     protected:
         /** Error message.
          */
         std::string msg_;
     };
 
-    class key_gen_exception : public Exception {};
+    class key_gen_exception       : public Exception {};
+    class key_invalid             : public key_gen_exception {};
+    class key_blacklisted         : public key_gen_exception {};
+    class key_phony               : public key_gen_exception {};
+    class key_bad_checksum        : public key_gen_exception {};
 
-    // TODO: fix this shit
-    #define key_invalid std::runtime_error
-    //class key_invalid : public key_gen_exception {};
+    class delser_internal_exception : public Exception {};
+    class bad_byte_to_check_error : delser_internal_exception {};
 
-    #define key_blacklisted std::runtime_error
-    //class key_blacklisted : public key_gen_exception {};
+    typedef std::tuple<int,int,int> sequence;
+    
+    bool check_key(std::string key);
+    std::string make_key(int seed);
 
-    #define key_phony std::runtime_error
-    //class key_phony : public key_gen_exception {};
-
-    #define key_bad_checksum std::runtime_error
-    //class key_bad_checksum : public key_gen_exception {};
+    Delser(int byte_to_check, std::vector<sequence> sequences) : byte_to_check(byte_to_check) {
+        if (sequences.empty()) {
+            sequences = {
+                std::make_tuple(24, 3, 200),
+                std::make_tuple(10, 0, 56),
+                std::make_tuple(15, 2, 91),
+                std::make_tuple(25, 3, 200),
+                std::make_tuple(25, 3, 56)
+            };
+        }
+        validate_byte_to_check(byte_to_check);
+    }
 
     Delser(int byte_to_check) : byte_to_check(byte_to_check) {
-        // ensure a valid sequence has been selected to check against
-        if (!(0 <= byte_to_check && byte_to_check <= sequences.size())) {
-            throw Exception("Bad byte_to_check");
-        }
+        validate_byte_to_check(byte_to_check);
     }
 
 private:
+    void validate_byte_to_check(int byte_to_check) {
+        // ensure a valid sequence has been selected to check against
+        if (!(0 <= byte_to_check && byte_to_check <= sequences.size())) {
+            std::stringstream ss;
+            ss << "Bad byte_to_check: " << byte_to_check;
+            std::string str = ss.str();
+            throw bad_byte_to_check_error(str);
+        }
+    }
 
     int byte_to_check;
 
-    typedef std::tuple<int,int,int> sequence;
-    std::vector<sequence> sequences = {
-        std::make_tuple(24, 3, 200),
-        std::make_tuple(10, 0, 56),
-        std::make_tuple(15, 2, 91),
-        std::make_tuple(25, 3, 200),
-        std::make_tuple(25, 3, 56)
-    };
+    std::vector<sequence> sequences;
 
     std::vector<std::string> blacklist;
 
@@ -106,7 +111,6 @@ private:
     bool check_key_checksum(std::string skey);
     int _get_key_byte(int seed, int a, int b, int c);
     std::string format_result(std::vector<std::string>key);
-
 
 };
 
