@@ -31,25 +31,13 @@ public:
     Delser(int byte_to_check, std::vector<sequence> sequences) : byte_to_check(byte_to_check) {
         if (sequences.empty()) {
             std::cout << "EMPTY" << std::endl;
-            sequences = {
-                std::make_tuple(24, 3, 200),
-                std::make_tuple(10, 0, 56),
-                std::make_tuple(15, 2, 91),
-                std::make_tuple(25, 3, 200),
-                std::make_tuple(25, 3, 56)
-            };
+            sequences = default_sequences;
         }
         validate_byte_to_check(byte_to_check);
     }
 
     Delser(int byte_to_check) : byte_to_check(byte_to_check) {
-        sequences = {
-            std::make_tuple(24, 3, 200),
-            std::make_tuple(10, 0, 56),
-            std::make_tuple(15, 2, 91),
-            std::make_tuple(25, 3, 200),
-            std::make_tuple(25, 3, 56)
-        };
+        sequences = default_sequences;
         validate_byte_to_check(byte_to_check);
     }
 
@@ -68,6 +56,14 @@ private:
     int byte_to_check;
 
     std::vector<sequence> sequences;
+    std::vector<sequence> default_sequences = {
+        std::make_tuple(24, 3, 200),
+        std::make_tuple(10, 0, 56),
+        std::make_tuple(15, 2, 91),
+        std::make_tuple(25, 3, 200),
+        std::make_tuple(25, 3, 56)
+    };
+
 
     std::vector<std::string> blacklist;
 
