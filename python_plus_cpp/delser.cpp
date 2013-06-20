@@ -119,7 +119,7 @@ namespace Delser_py {
                 ((Delser_Object *)self)->delser_inst = delser_inst;
                 return 0;
 
-            } catch (bad_byte_to_check_error& e) {
+            } catch (exceptions::bad_byte_to_check_error& e) {
                 PyErr_SetString(PyExc_ValueError, "Invalid byte_to_check specified");
                 return -1;
             }

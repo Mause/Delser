@@ -8,6 +8,7 @@ http://www.brandonstaggs.com/2007/07/26/implementing-a-partial-serial-number-ver
 #include <iostream>
 #include <sstream>
 #include <iomanip>
+#include <stdexcept>
 
 #include <memory>
 #include <algorithm>
@@ -16,58 +17,12 @@ http://www.brandonstaggs.com/2007/07/26/implementing-a-partial-serial-number-ver
 #include <array>
 #include <tuple>
 
+#include "exceptions.cpp"
 
 class Delser {
 public:
     /// fairly self explanatory
-    class Exception: public std::exception
-    {
-    public:
-        /** Constructor (C strings).
-         *  @param message C-style string error message.
-         *                 The string contents are copied upon construction.
-         *                 Hence, responsibility for deleting the \c char* lies
-         *                 with the caller. 
-         */
-        template<typename T>
-        explicit Exception(T message) : msg_(message) {}
-//        explicit Exception(char* message) : msg_(message) {}
-
-        /** Constructor (C++ STL strings).
-         *  @param message The error message.
-         */
-  //      explicit Exception(const std::string& message) : msg_(message) {}
-    //    explicit Exception(std::string& message)       : msg_(message) {}
-
-        /** Destructor.
-         * Virtual to allow for subclassing.
-         */
-        virtual ~Exception() throw (){}
-
-        /** Returns a pointer to the (constant) error description.
-         *  @return A pointer to a \c const \c char*. The underlying memory
-         *          is in posession of the \c Exception object. Callers \a must
-         *          not attempt to free the memory.
-         */
-        virtual const char* what() const throw (){
-           return msg_.c_str();
-        }
     
-    protected:
-        /** Error message.
-         */
-        std::string msg_;
-    };
-
-    class key_gen_exception       : public Exception {};
-    class key_invalid             : public key_gen_exception {};
-    class key_blacklisted         : public key_gen_exception {};
-    class key_phony               : public key_gen_exception {};
-    class key_bad_checksum        : public key_gen_exception {};
-
-    class delser_internal_exception : public Exception {};
-    class bad_byte_to_check_error : delser_internal_exception {};
-
     typedef std::tuple<int,int,int> sequence;
     
     bool check_key(std::string key);
@@ -75,6 +30,7 @@ public:
 
     Delser(int byte_to_check, std::vector<sequence> sequences) : byte_to_check(byte_to_check) {
         if (sequences.empty()) {
+            std::cout << "EMPTY" << std::endl;
             sequences = {
                 std::make_tuple(24, 3, 200),
                 std::make_tuple(10, 0, 56),
@@ -87,6 +43,13 @@ public:
     }
 
     Delser(int byte_to_check) : byte_to_check(byte_to_check) {
+        sequences = {
+            std::make_tuple(24, 3, 200),
+            std::make_tuple(10, 0, 56),
+            std::make_tuple(15, 2, 91),
+            std::make_tuple(25, 3, 200),
+            std::make_tuple(25, 3, 56)
+        };
         validate_byte_to_check(byte_to_check);
     }
 
@@ -97,7 +60,8 @@ private:
             std::stringstream ss;
             ss << "Bad byte_to_check: " << byte_to_check;
             std::string str = ss.str();
-            throw bad_byte_to_check_error(str);
+            std::cout << "#####: " << sequences.size() << " ##############: " << byte_to_check << std::endl;
+            throw exceptions::bad_byte_to_check_error(str);
         }
     }
 
@@ -118,7 +82,7 @@ namespace utils {
     template<typename T>
     void assert(bool condition, T str) {
         if (!condition) {
-            throw Delser::Exception(str);
+            throw std::runtime_error(str);
         }
     }
 

@@ -75,7 +75,7 @@ std::string Delser::make_key(int seed) {
 
 bool Delser::check_key_checksum(std::string skey) {
     if (std::count(skey.begin(), skey.end(), '-') != (sequences.size() + 1)) {
-        throw key_invalid("wrong number of sections");//; %d <> %d", 
+        throw exceptions::key_invalid("wrong number of sections");//; %d <> %d", 
 //            std::count(skey.begin(), skey.end(), '-') + 1, skey);
     }
 
@@ -94,7 +94,7 @@ bool Delser::check_key_checksum(std::string skey) {
     // compare the supplied checksum against the real checksum for
     // the key string.
     if (grabbed_checksum != get_checksum(s)) {
-        throw key_bad_checksum("Incorrect checksum");//; %s is not equal to %s", 
+        throw exceptions::key_bad_checksum("Incorrect checksum");//; %s is not equal to %s", 
             //grabbed_checksum, get_checksum(s));
     }
 
@@ -105,7 +105,7 @@ bool Delser::check_key(std::string key) {
     // test against blacklist
     if (!blacklist.empty()) {
         if (std::find(blacklist.begin(), blacklist.end(), utils::upper(key)) != blacklist.end()) {
-            throw key_blacklisted(key);
+            throw exceptions::key_blacklisted(key);
         }
     }
 
@@ -132,7 +132,7 @@ bool Delser::check_key(std::string key) {
        std::get<2>(selected_sequence)) / 2);
     
     if (utils::rjust(key_byte, '0', generated_byte.length()) != utils::rjust(utils::upper(generated_byte), '0', 4)) {
-        throw key_phony("Phony key");//skey);
+        throw exceptions::key_phony("Phony key");//skey);
     }
 
     // If we get this far, then it means the key is either good, or was made
