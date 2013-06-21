@@ -4,7 +4,6 @@ sys.path.append('./build/lib.linux-i686-3.3/')
 import delser
 inst = delser.Delser(1, [])
 
-for x in range(1000000):
-    inst.check_key(inst.make_key(x))
-
-#x.check_key("string")
+key = inst.make_key(1)
+print(key)
+inst.check_key(key)

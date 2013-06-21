@@ -38,23 +38,36 @@ namespace Delser_py {
         typedef struct {
             PyObject_HEAD
             Delser *delser_inst;
-            /* type specific fields go here */
         } Delser_Object;
+
+        PyObject * KeyGenException         = PyErr_NewException("delser.KeyGenException", NULL, NULL);
+        PyObject * KeyInvalidException     = PyErr_NewException("delser.KeyInvalidException", KeyGenException, NULL);
+        PyObject * KeyBlacklistedException = PyErr_NewException("delser.KeyBlacklistException", KeyGenException, NULL);
+        PyObject * KeyPhonyException       = PyErr_NewException("delser.KeyPhonyException", KeyGenException, NULL);
+        PyObject * KeyBadChecksumException = PyErr_NewException("delser.KeyBadException", KeyGenException, NULL);
+
+        PyObject * DelserInternalException = PyErr_NewException("delser.DelserInternalException", NULL, NULL);
+        PyObject * BadByteToCheckError     = PyErr_NewException("delser.BadByteToCheckError", DelserInternalException, NULL);
 
         static PyObject *make_key(PyObject *self, PyObject *args) {
             int seed;
 
-            if(!PyArg_ParseTuple(args, "i", &seed)) {
+            if(!PyArg_ParseTuple(args, "i", &seed))
                 return NULL;
-            }
-            
+
             Delser * delser_inst = ((Delser_Object *)self)->delser_inst;
             std::string key = delser_inst->make_key(seed);
 
+            // create a corresponding PyObject
             PyObject *pyKey = PyUnicode_FromString(key.c_str());
             Py_XINCREF(pyKey);
 
             return pyKey;
+        }
+
+        const char * format(std::string sp1, std::string sp2, std::string sp3) {
+            std::string out = sp1 + sp2 + sp3;
+            return out.c_str();
         }
 
         static PyObject *check_key(PyObject *self, PyObject *args) {
@@ -64,22 +77,34 @@ namespace Delser_py {
             std::string key = skey;
 
             Delser * delser_inst = ((Delser_Object *)self)->delser_inst;
-            long good_long = delser_inst->check_key(key) ? 1 : 0;
-    
-            PyObject *good_bool = PyBool_FromLong(good_long);
-            Py_XINCREF(good_bool);
 
-            return good_bool;
+            try {
+                long good_long = delser_inst->check_key(key) ? 1 : 0;
+
+                PyObject *good_bool = PyBool_FromLong(good_long);
+                Py_XINCREF(good_bool);
+
+                return good_bool;
+
+            } catch (exceptions::key_invalid& e) {
+                PyErr_SetString(KeyInvalidException, format("Wrong number of sections: \"", e.what(), "\""));
+                return NULL;
+            } catch (exceptions::key_blacklisted& e) {
+                PyErr_SetString(KeyBlacklistedException, format("Blacklisted key: \"", e.what(), "\""));
+                return NULL;
+            } catch (exceptions::key_phony& e) {
+                PyErr_SetString(KeyPhonyException, format("Phony key: \"", e.what(), "\""));
+                return NULL;
+            } catch (exceptions::key_bad_checksum& e) {
+                PyErr_SetString(KeyBadChecksumException, format("Bad key: \"", e.what(), "\""));
+                return NULL;
+            }
         }
 
         static PyMethodDef methods[] = {
             {"make_key", make_key, METH_VARARGS, ""},
             {"check_key", check_key, METH_VARARGS, ""},
             {NULL, NULL, 0, NULL}   /* Sentinal */
-        };
-
-        static PyMemberDef members[] = {
-            {NULL} /* sentinal */
         };
 
         static int init(PyObject *self, PyObject *args) {
@@ -161,7 +186,7 @@ namespace Delser_py {
             0,                         /* tp_iter */
             0,                         /* tp_iternext */
             Delser_Obj::methods,       /* tp_methods */
-            Delser_Obj::members,       /* tp_members */
+            0,                         /* tp_members */
             0,                         /* tp_getset */
             0,                         /* tp_base */
             0,                         /* tp_dict */

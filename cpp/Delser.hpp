@@ -28,16 +28,19 @@ public:
     bool check_key(std::string key);
     std::string make_key(int seed);
 
-    Delser(int byte_to_check, std::vector<sequence> sequences) : byte_to_check(byte_to_check) {
-        if (sequences.empty()) {
-            std::cout << "EMPTY" << std::endl;
+    Delser(int byte_to_check, std::vector<sequence> supplied_sequences) : byte_to_check(byte_to_check) {
+        if (supplied_sequences.empty()) {
             sequences = default_sequences;
+        } else {
+            sequences = supplied_sequences;
         }
+
         validate_byte_to_check(byte_to_check);
     }
 
     Delser(int byte_to_check) : byte_to_check(byte_to_check) {
         sequences = default_sequences;
+
         validate_byte_to_check(byte_to_check);
     }
 

@@ -122,7 +122,6 @@ bool Delser::check_key(std::string key) {
     // extract the seed from the supplied key string
     int seed = utils::hex_to_int(skey[0]);
 
-//    throw Exception()
     sequence selected_sequence = sequences[byte_to_check];
 
     std::string key_byte = utils::upper(skey[byte_to_check + 1]);
