@@ -52,7 +52,7 @@ namespace Delser_py {
                 return good_bool;
 
             } catch (exceptions::key_invalid& e) {
-                PyErr_SetString(KeyInvalidException, CSTR("Wrong number of sections: \"" << e.what() << "\""));
+                PyErr_SetString(KeyInvalidException, CSTR("Wrong number of sections in key: " << e.what()));
                 return NULL;
             } catch (exceptions::key_blacklisted& e) {
                 PyErr_SetString(KeyBlacklistedException, CSTR("Blacklisted key: \"" << e.what() << "\""));
