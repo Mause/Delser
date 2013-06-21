@@ -21,13 +21,12 @@ http://www.brandonstaggs.com/2007/07/26/implementing-a-partial-serial-number-ver
 
 class Delser {
 public:
-    /// fairly self explanatory
-    
     typedef std::tuple<int,int,int> sequence;
     
     bool check_key(std::string key);
     std::string make_key(int seed);
 
+    // two constructors, to make it so that the supplying the sequences is optional
     Delser(int byte_to_check, std::vector<sequence> supplied_sequences) : byte_to_check(byte_to_check) {
         if (supplied_sequences.empty()) {
             sequences = default_sequences;
@@ -48,11 +47,7 @@ private:
     void validate_byte_to_check(int byte_to_check) {
         // ensure a valid sequence has been selected to check against
         if (!(0 <= byte_to_check && byte_to_check <= sequences.size())) {
-            std::stringstream ss;
-            ss << "Bad byte_to_check: " << byte_to_check;
-            std::string str = ss.str();
-            std::cout << "#####: " << sequences.size() << " ##############: " << byte_to_check << std::endl;
-            throw exceptions::bad_byte_to_check_error(str);
+            throw exceptions::bad_byte_to_check_error(std::to_string(byte_to_check));
         }
     }
 
@@ -84,6 +79,9 @@ namespace utils {
             throw std::runtime_error(str);
         }
     }
+
+    #define SSTR( x ) dynamic_cast< std::ostringstream & >( ( std::ostringstream() << x ) ).str()
+    #define CSTR( x ) SSTR( x ).c_str()
 
     template<typename T>
     std::string int_to_hex(T i) {

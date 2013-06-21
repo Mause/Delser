@@ -65,11 +65,6 @@ namespace Delser_py {
             return pyKey;
         }
 
-        const char * format(std::string sp1, std::string sp2, std::string sp3) {
-            std::string out = sp1 + sp2 + sp3;
-            return out.c_str();
-        }
-
         static PyObject *check_key(PyObject *self, PyObject *args) {
             char *skey;
             if(!PyArg_ParseTuple(args, "s", &skey))
@@ -87,16 +82,16 @@ namespace Delser_py {
                 return good_bool;
 
             } catch (exceptions::key_invalid& e) {
-                PyErr_SetString(KeyInvalidException, format("Wrong number of sections: \"", e.what(), "\""));
+                PyErr_SetString(KeyInvalidException, CSTR("Wrong number of sections: \"" << e.what() << "\""));
                 return NULL;
             } catch (exceptions::key_blacklisted& e) {
-                PyErr_SetString(KeyBlacklistedException, format("Blacklisted key: \"", e.what(), "\""));
+                PyErr_SetString(KeyBlacklistedException, CSTR("Blacklisted key: \"" << e.what() << "\""));
                 return NULL;
             } catch (exceptions::key_phony& e) {
-                PyErr_SetString(KeyPhonyException, format("Phony key: \"", e.what(), "\""));
+                PyErr_SetString(KeyPhonyException, CSTR("Phony key: \"" << e.what() << "\""));
                 return NULL;
             } catch (exceptions::key_bad_checksum& e) {
-                PyErr_SetString(KeyBadChecksumException, format("Bad key: \"", e.what(), "\""));
+                PyErr_SetString(KeyBadChecksumException, CSTR("Bad key: \"" << e.what() << "\""));
                 return NULL;
             }
         }
@@ -145,7 +140,7 @@ namespace Delser_py {
                 return 0;
 
             } catch (exceptions::bad_byte_to_check_error& e) {
-                PyErr_SetString(PyExc_ValueError, "Invalid byte_to_check specified");
+                PyErr_SetString(PyExc_ValueError, CSTR("Invalid byte_to_check specified: " << e.what()));
                 return -1;
             }
         }
