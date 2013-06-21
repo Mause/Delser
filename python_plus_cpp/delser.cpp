@@ -20,11 +20,12 @@ namespace Delser_py {
         PyObject * BadByteToCheckError     = PyErr_NewException("delser.BadByteToCheckError",   DelserInternalException, NULL);
 
         static PyObject *make_key(PyObject *self, PyObject *args) {
+            // grab the integer argument
             int seed;
-
             if(!PyArg_ParseTuple(args, "i", &seed))
                 return NULL;
 
+            // grab a pointer to the Delser instance, and make a key
             Delser * delser_inst = ((Delser_Object *)self)->delser_inst;
             std::string key = delser_inst->make_key(seed);
 
@@ -32,6 +33,7 @@ namespace Delser_py {
             PyObject *pyKey = PyUnicode_FromString(key.c_str());
             Py_XINCREF(pyKey);
 
+            // and return the new unicode object
             return pyKey;
         }
 
@@ -102,20 +104,25 @@ namespace Delser_py {
             }
 
             try {
+                // new Delser instance!
                 Delser *delser_inst = new Delser(byte_to_check, sequences);
 
+                // assign it to the appropriate place on our PyObject-like struct
                 ((Delser_Object *)self)->delser_inst = delser_inst;
                 return 0;
 
             } catch (exceptions::bad_byte_to_check_error& e) {
+                // inform the user if they failed to pass a valid byte_to_check
                 PyErr_SetString(PyExc_ValueError, CSTR("Invalid byte_to_check specified: " << e.what()));
                 return -1;
             }
         }
 
         static void dealloc(PyObject *self){
+            // deallocate the Delser instance
             delete ((Delser_Object *)self)->delser_inst;
 
+            // deallocate ourselves
             Py_TYPE(self)->tp_free((PyObject*)self);
         }
 
@@ -162,20 +169,25 @@ namespace Delser_py {
         };    
     }
 
+    // define the module struct :D
     static struct PyModuleDef Module = {
         PyModuleDef_HEAD_INIT,
-        "delser",   /* name of module */
+        "delser",                            /* name of module */
         "Serial key generator module",       /* module doc */
         -1,
         NULL, NULL, NULL, NULL, NULL
     };
 
+    // initialise the module
     PyMODINIT_FUNC PyInit_delser(void) {
+        // ensure the type is good to go :D
         if (PyType_Ready(&Delser_Obj::type) < 0) return NULL;
-        
-        PyObject *m = PyModule_Create(&Module);
-        if (!m) return NULL;
 
+        // create the new module object
+        PyObject *m = PyModule_Create(&Module);
+        if (m == NULL) return NULL;
+
+        // increase the reference number of the type, register the delser.Delser object/type
         Py_INCREF(&Delser_Obj::type);
         PyModule_AddObject(m, "Delser", (PyObject *)&Delser_Obj::type);
         return m;
