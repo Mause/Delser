@@ -14,7 +14,7 @@ namespace Delser_py {
         PyObject * KeyInvalidException     = PyErr_NewException("delser.KeyInvalidException",   KeyGenException, NULL);
         PyObject * KeyBlacklistedException = PyErr_NewException("delser.KeyBlacklistException", KeyGenException, NULL);
         PyObject * KeyPhonyException       = PyErr_NewException("delser.KeyPhonyException",     KeyGenException, NULL);
-        PyObject * KeyBadChecksumException = PyErr_NewException("delser.KeyBadException",       KeyGenException, NULL);
+        PyObject * KeyBadChecksumException = PyErr_NewException("delser.KeyBadChecksumException",       KeyGenException, NULL);
 
         PyObject * DelserInternalException = PyErr_NewException("delser.DelserInternalException", NULL, NULL);
         PyObject * BadByteToCheckError     = PyErr_NewException("delser.BadByteToCheckError",   DelserInternalException, NULL);
@@ -61,7 +61,7 @@ namespace Delser_py {
                 PyErr_SetString(KeyPhonyException, CSTR("Phony key: \"" << e.what() << "\""));
                 return NULL;
             } catch (exceptions::key_bad_checksum& e) {
-                PyErr_SetString(KeyBadChecksumException, CSTR("Bad key: \"" << e.what() << "\""));
+                PyErr_SetString(KeyBadChecksumException, CSTR("Bad checksum: " << e.what()));
                 return NULL;
             }
         }

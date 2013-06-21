@@ -6,4 +6,4 @@ inst = delser.Delser(1, [])
 
 key = inst.make_key(1)
 print(key)
-inst.check_key(key)
+inst.check_key(input('> '))
