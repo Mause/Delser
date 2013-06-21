@@ -44,9 +44,7 @@ namespace Delser_py {
             Delser * delser_inst = ((Delser_Object *)self)->delser_inst;
 
             try {
-                long good_long = delser_inst->check_key(key) ? 1 : 0;
-
-                PyObject *good_bool = PyBool_FromLong(good_long);
+                PyObject *good_bool = PyBool_FromLong(delser_inst->check_key(key) ? 1 : 0);
                 Py_XINCREF(good_bool);
 
                 return good_bool;
