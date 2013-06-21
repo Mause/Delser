@@ -1,37 +1,7 @@
 #include "../cpp/Delser.hpp"
 #include <Python.h>
 #include "structmember.h"
-#include "assert.h"
-
-const char * objects_dir(PyObject *obj){
-    PyObject* r = PyObject_Dir(obj);
-    if (r == NULL) return NULL;
-
-    PyObject* o = PyObject_Repr(r);
-    if (o == NULL) return NULL;
-
-    PyObject *pyStr = PyUnicode_AsEncodedString(o, "utf-8", "");
-    if (pyStr == NULL) return NULL;
-
-    const char *str = PyBytes_AS_STRING(pyStr);
-    if (str == NULL) return NULL;
-    return str;
-}
-
-const char * objects_type(PyObject *obj){
-    PyObject* r = PyObject_Type(obj);
-    if (r == NULL) return NULL;
-
-    PyObject* o = PyObject_Repr(r);
-    if (o == NULL) return NULL;
-
-    PyObject *pyStr = PyUnicode_AsEncodedString(o, "utf-8", "");
-    if (pyStr == NULL) return NULL;
-
-    const char *str = PyBytes_AS_STRING(pyStr);
-    if (str == NULL) return NULL;
-    return str;
-}
+#include "utils.cpp"
 
 namespace Delser_py {
     namespace Delser_Obj {
@@ -40,14 +10,14 @@ namespace Delser_py {
             Delser *delser_inst;
         } Delser_Object;
 
-        PyObject * KeyGenException         = PyErr_NewException("delser.KeyGenException", NULL, NULL);
-        PyObject * KeyInvalidException     = PyErr_NewException("delser.KeyInvalidException", KeyGenException, NULL);
+        PyObject * KeyGenException         = PyErr_NewException("delser.KeyGenException",       NULL, NULL);
+        PyObject * KeyInvalidException     = PyErr_NewException("delser.KeyInvalidException",   KeyGenException, NULL);
         PyObject * KeyBlacklistedException = PyErr_NewException("delser.KeyBlacklistException", KeyGenException, NULL);
-        PyObject * KeyPhonyException       = PyErr_NewException("delser.KeyPhonyException", KeyGenException, NULL);
-        PyObject * KeyBadChecksumException = PyErr_NewException("delser.KeyBadException", KeyGenException, NULL);
+        PyObject * KeyPhonyException       = PyErr_NewException("delser.KeyPhonyException",     KeyGenException, NULL);
+        PyObject * KeyBadChecksumException = PyErr_NewException("delser.KeyBadException",       KeyGenException, NULL);
 
         PyObject * DelserInternalException = PyErr_NewException("delser.DelserInternalException", NULL, NULL);
-        PyObject * BadByteToCheckError     = PyErr_NewException("delser.BadByteToCheckError", DelserInternalException, NULL);
+        PyObject * BadByteToCheckError     = PyErr_NewException("delser.BadByteToCheckError",   DelserInternalException, NULL);
 
         static PyObject *make_key(PyObject *self, PyObject *args) {
             int seed;
